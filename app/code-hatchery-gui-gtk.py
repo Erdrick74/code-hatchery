@@ -66,25 +66,9 @@ class DevCreateGtkApp:
         with GUI_LOGFILE.open("a", encoding="utf-8") as f:
             f.write(f"[{stamp}] {msg}\n")
 
-    def _trace_event(self, name: str):
-        def _handler(_widget: Gtk.Widget, event: Gdk.Event) -> bool:
-            etype = getattr(event, "type", None)
-            keyval = getattr(event, "keyval", None)
-            state = getattr(event, "state", None)
-            button = getattr(event, "button", None)
-            self._log(
-                f"trace {name}: type={etype} keyval={keyval} state={state} button={button} "
-                f"active={self.template_combo.get_active() if hasattr(self, 'template_combo') else 'n/a'} "
-                f"text={self.template_combo.get_active_text() if hasattr(self, 'template_combo') else 'n/a'}"
-            )
-            return False
-
-        return _handler
-
     def _set_error(self, msg: str, focus: str | None = None) -> None:
         self._set_status(msg)
         self._log(f"validation_error: {msg}")
-        GLib.idle_add(self._append_log, f"{msg}\n")
         if focus == "project":
             self.project_entry.grab_focus()
         elif focus == "base":
@@ -333,13 +317,6 @@ class DevCreateGtkApp:
         self._browse_dialog = dialog
         dialog.show_all()
 
-    def _append_log(self, text: str) -> bool:
-        # Details panel removed; keep logging file-only behavior.
-        return False
-
-    def _clear_log(self) -> bool:
-        return False
-
     def _set_busy(self, busy: bool) -> None:
         enabled = not busy
         self.template_combo.set_sensitive(enabled)
@@ -370,7 +347,6 @@ class DevCreateGtkApp:
         self._log(f"message {title}: {body}")
         # Avoid modal dialogs in layer-shell mode: they can trap input and look frozen.
         self._set_status(f"{title}: {body}")
-        GLib.idle_add(self._append_log, f"{title}: {body}\n")
         if command_exists("notify-send"):
             subprocess.Popen(["notify-send", title, body], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -485,8 +461,8 @@ class DevCreateGtkApp:
         )
 
         assert process.stdout is not None
-        for line in process.stdout:
-            GLib.idle_add(self._append_log, line)
+        for _ in process.stdout:
+            pass
 
         return process.wait()
 
@@ -524,25 +500,20 @@ class DevCreateGtkApp:
 
         self._set_busy(True)
         self._set_status("Creating project...")
-        self._clear_log()
         self._log("creation started")
 
         def worker() -> None:
             try:
                 os.makedirs(base_dir, exist_ok=True)
-                GLib.idle_add(self._append_log, f"Creating from template '{template}'\n")
                 rc = self._run_command([str(CREATE_SCRIPT), template, project_path])
                 if rc != 0:
                     self._log(f"create-project failed rc={rc}")
-                    GLib.idle_add(self._append_log, f"\ncreate-project failed (exit {rc})\n")
                     GLib.idle_add(self._finish, False, "Create step failed.")
                     return
 
-                GLib.idle_add(self._append_log, "\nRunning bootstrap...\n")
                 rc = self._run_command(["./bootstrap.sh"], cwd=project_path)
                 if rc != 0:
                     self._log(f"bootstrap failed rc={rc}")
-                    GLib.idle_add(self._append_log, f"\nbootstrap failed (exit {rc})\n")
                     GLib.idle_add(self._finish, False, "Bootstrap failed.")
                     return
 
@@ -578,7 +549,6 @@ class DevCreateGtkApp:
                 GLib.idle_add(self._finish, True, f"Done: {project_path}")
             except Exception as exc:
                 self._log(f"unexpected exception: {exc}")
-                GLib.idle_add(self._append_log, f"\nUnexpected error: {exc}\n")
                 GLib.idle_add(self._finish, False, "Unexpected error.")
 
         self.worker = threading.Thread(target=worker, daemon=True)

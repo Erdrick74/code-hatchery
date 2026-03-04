@@ -42,3 +42,5 @@ PREFIX=/your/prefix ./install.sh
 ```bash
 code-hatchery
 ```
+
+Default project creation path is the current user's home directory (`$HOME`), and can be changed in the UI/CLI.
