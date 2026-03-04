@@ -1,0 +1,5 @@
+{
+  "editor.formatOnSave": true,
+  "Lua.format.enable": true,
+  "Lua.runtime.version": "Lua 5.4"
+}

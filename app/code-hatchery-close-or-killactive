@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+active="$(hyprctl activewindow 2>/dev/null || true)"
+if printf '%s\n' "$active" | grep -Eq 'title:[[:space:]]*(Code Hatchery)'; then
+  exit 0
+fi
+
+hyprctl dispatch killactive

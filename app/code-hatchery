@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GUI_GTK="$SCRIPT_DIR/code-hatchery-gui-gtk.py"
+CLI="$SCRIPT_DIR/code-hatchery.cli"
+LOGFILE="/tmp/code-hatchery-launch.log"
+
+{
+  echo "=== $(date '+%F %T') code-hatchery launch ==="
+  echo "WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"
+  echo "DISPLAY=${DISPLAY:-}"
+  echo "XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-}"
+} >>"$LOGFILE" 2>&1
+
+if pgrep -f "$GUI_GTK" >/dev/null 2>&1; then
+  pkill -f "$GUI_GTK" >/dev/null 2>&1 || true
+  exit 0
+fi
+
+if python3 -c "import gi; gi.require_version('Gtk','3.0'); gi.require_version('GtkLayerShell','0.1'); from gi.repository import Gtk, GtkLayerShell" >/dev/null 2>&1; then
+  set +e
+  "$GUI_GTK" "$@" >>"$LOGFILE" 2>&1
+  rc=$?
+  set -e
+  echo "GTK launcher exited: $rc" >>"$LOGFILE" 2>&1
+  exit "$rc"
+fi
+
+if command -v notify-send >/dev/null 2>&1; then
+  notify-send "Code Hatchery" "GTK layer-shell unavailable. Falling back to terminal mode." || true
+fi
+
+for term in kitty footclient alacritty wezterm xterm; do
+  if command -v "$term" >/dev/null 2>&1; then
+    exec "$term" -e "$CLI" "$@"
+  fi
+done
+
+echo "No terminal emulator found to run fallback mode." >&2
+exit 1
