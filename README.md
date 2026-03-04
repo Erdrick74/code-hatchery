@@ -2,11 +2,6 @@
 
 Code Hatchery is a Linux project scaffolder with a focused GUI and starter templates.
 
-## Scope
-
-- Core app is desktop-agnostic Linux.
-- Hyprland keybind integration is optional and documented separately.
-
 ## Runtime dependencies
 
 - `bash`
@@ -47,7 +42,3 @@ PREFIX=/your/prefix ./install.sh
 ```bash
 code-hatchery
 ```
-
-## Optional compositor integrations
-
-See [Hyprland integration](docs/hyprland.md).
