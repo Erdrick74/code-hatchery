@@ -14,13 +14,13 @@ gi.require_version("GtkLayerShell", "0.1")
 from gi.repository import Gdk, GLib, Gtk, GtkLayerShell
 
 TEMPLATES = ["python", "node-ts", "go", "rust", "java", "cpp", "csharp", "php", "lua"]
-DEFAULT_BASE = os.path.expanduser("~/Chronos")
+DEFAULT_BASE = os.path.expanduser("~")
 SCRIPT_DIR = Path(__file__).resolve().parent
 CREATE_SCRIPT = SCRIPT_DIR / "create-project.sh"
 GUI_LOGFILE = Path("/tmp/code-hatchery-gui.log")
 APP_NAME = "Code Hatchery"
 APP_VERSION = "1.0.0"
-APP_GITHUB = "Erdrick74"
+APP_AUTHOR = "Erdrick74"
 
 
 class DevCreateGtkApp:
@@ -111,7 +111,7 @@ class DevCreateGtkApp:
           font-size: 1.05em;
         }
 
-        #devcreate-header-meta {
+        #devcreate-header-user {
           opacity: 0.85;
         }
 
@@ -175,18 +175,30 @@ class DevCreateGtkApp:
         card_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         card.add(card_box)
 
-        header_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        card_box.pack_start(header_box, False, False, 0)
+        header_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        card_box.pack_start(header_row, False, False, 0)
+
+        header_icon = Gtk.Image.new_from_icon_name("code-hatchery", Gtk.IconSize.DIALOG)
+        header_icon.set_pixel_size(40)
+        if header_icon.get_storage_type() == Gtk.ImageType.EMPTY:
+            icon_fallback = Path.home() / ".local/share/icons/hicolor/128x128/apps/code-hatchery.png"
+            if icon_fallback.is_file():
+                header_icon.set_from_file(str(icon_fallback))
+        header_row.pack_start(header_icon, False, False, 0)
+
+        header_line = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        header_row.pack_start(header_line, True, True, 0)
 
         header_title = Gtk.Label(label=f"{APP_NAME} v{APP_VERSION}")
         header_title.set_name("devcreate-header-title")
         header_title.set_xalign(0.0)
-        header_box.pack_start(header_title, False, False, 0)
+        header_title.set_hexpand(True)
+        header_line.pack_start(header_title, True, True, 0)
 
-        header_meta = Gtk.Label(label=f"GitHub: {APP_GITHUB}")
-        header_meta.set_name("devcreate-header-meta")
-        header_meta.set_xalign(0.0)
-        header_box.pack_start(header_meta, False, False, 0)
+        header_user = Gtk.Label(label=APP_AUTHOR)
+        header_user.set_name("devcreate-header-user")
+        header_user.set_xalign(1.0)
+        header_line.pack_end(header_user, False, False, 0)
 
         grid = Gtk.Grid(column_spacing=8, row_spacing=6)
         card_box.pack_start(grid, False, False, 0)
