@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Core uninstall is compositor-agnostic; removes only Code Hatchery user-local files.
 PREFIX="${PREFIX:-$HOME/.local}"
 APP_SHARE="$PREFIX/share/code-hatchery"
 BIN_DIR="$PREFIX/bin"

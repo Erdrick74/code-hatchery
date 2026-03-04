@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Core installer is compositor-agnostic; no Hyprland-specific integration is required.
 PREFIX="${PREFIX:-$HOME/.local}"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_SHARE="$PREFIX/share/code-hatchery"

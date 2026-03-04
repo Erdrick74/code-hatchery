@@ -1,6 +1,6 @@
 # Code Hatchery
 
-Code Hatchery is a Linux project scaffolder with a focused GUI and starter templates.
+Code Hatchery is a Wayland-only Linux project scaffolder with a focused GUI and starter templates.
 
 ## Runtime dependencies
 
