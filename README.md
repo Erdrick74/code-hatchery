@@ -1,19 +1,24 @@
 # Code Hatchery
 
-Code Hatchery is a Wayland-only Linux project scaffolder with a focused GUI and starter templates.
+Code Hatchery is a Linux project scaffolder with a focused GUI, starter templates for popular languages, and automatic terminal fallback when GUI mode is unavailable.
+
+## Runtime behavior
+
+- Primary mode: GTK GUI
+- Fallback mode: terminal CLI (if GUI requirements are unavailable)
 
 ## Runtime dependencies
 
 - `bash`
 - `python3`
-- `python-gobject` / `PyGObject` (`gi`)
-- `gtk3`
-- `gtk-layer-shell` (for overlay behavior)
+- `python-gobject` / `PyGObject` (`gi`) for GUI mode
+- `gtk3` for GUI mode
+- `gtk-layer-shell` for GUI overlay behavior
 
 Optional:
 
 - `code` (VS Code launcher) for auto-open
-- one terminal emulator (`kitty`, `footclient`, `alacritty`, `wezterm`, or `xterm`) for CLI fallback mode
+- one terminal emulator (`kitty`, `footclient`, `alacritty`, `wezterm`, or `xterm`) for fallback CLI mode
 
 ## Install dependencies
 
