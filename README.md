@@ -2,6 +2,24 @@
 
 Code Hatchery is a Linux project scaffolder with a focused GUI and starter templates.
 
+## Scope
+
+- Core app is desktop-agnostic Linux.
+- Hyprland keybind integration is optional and documented separately.
+
+## Runtime dependencies
+
+- `bash`
+- `python3`
+- `python-gobject` / `PyGObject` (`gi`)
+- `gtk3`
+- `gtk-layer-shell` (for overlay behavior)
+
+Optional:
+
+- `code` (VS Code launcher) for auto-open
+- one terminal emulator (`kitty`, `footclient`, `alacritty`, `wezterm`, or `xterm`) for CLI fallback mode
+
 ## Install
 
 ```bash
@@ -30,15 +48,6 @@ PREFIX=/your/prefix ./install.sh
 code-hatchery
 ```
 
-## Hyprland keybind example
+## Optional compositor integrations
 
-```ini
-bind = $mainMod, N, exec, ~/.local/bin/code-hatchery
-bind = $mainMod, C, exec, ~/.local/bin/code-hatchery-close-or-killactive
-```
-
-Then run:
-
-```bash
-hyprctl reload
-```
+See [Hyprland integration](docs/hyprland.md).

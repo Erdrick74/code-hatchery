@@ -8,7 +8,7 @@ APPS_DIR="$PREFIX/share/applications"
 ICON_BASE="$PREFIX/share/icons/hicolor"
 
 rm -rf "$APP_SHARE"
-rm -f "$BIN_DIR/code-hatchery" "$BIN_DIR/code-hatchery-close-or-killactive"
+rm -f "$BIN_DIR/code-hatchery"
 rm -f "$APPS_DIR/code-hatchery.desktop"
 
 for s in 1024 512 256 128 64 48 32; do

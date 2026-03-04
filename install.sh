@@ -13,7 +13,6 @@ mkdir -p "$APP_SHARE" "$BIN_DIR" "$APPS_DIR"
 install -m 0755 "$REPO_DIR/app/code-hatchery" "$APP_SHARE/code-hatchery"
 install -m 0755 "$REPO_DIR/app/code-hatchery-gui-gtk.py" "$APP_SHARE/code-hatchery-gui-gtk.py"
 install -m 0755 "$REPO_DIR/app/code-hatchery.cli" "$APP_SHARE/code-hatchery.cli"
-install -m 0755 "$REPO_DIR/app/code-hatchery-close-or-killactive" "$APP_SHARE/code-hatchery-close-or-killactive"
 install -m 0755 "$REPO_DIR/app/create-project.sh" "$APP_SHARE/create-project.sh"
 
 for t in python node-ts go rust java cpp csharp php lua; do
@@ -27,13 +26,7 @@ set -euo pipefail
 exec "$APP_SHARE/code-hatchery" "\$@"
 LAUNCH
 
-cat > "$BIN_DIR/code-hatchery-close-or-killactive" <<CLOSE
-#!/usr/bin/env bash
-set -euo pipefail
-exec "$APP_SHARE/code-hatchery-close-or-killactive" "\$@"
-CLOSE
-
-chmod +x "$BIN_DIR/code-hatchery" "$BIN_DIR/code-hatchery-close-or-killactive"
+chmod +x "$BIN_DIR/code-hatchery"
 
 # Install icon at common sizes.
 ICON_SRC="$REPO_DIR/app/icons/code-hatchery.png"
