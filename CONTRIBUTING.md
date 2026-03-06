@@ -13,6 +13,6 @@ Thanks for contributing to Code Hatchery.
 You can run quick syntax checks with:
 
 ```bash
-python3 -m py_compile app/code-hatchery-gui-gtk.py
-bash -n app/code-hatchery app/code-hatchery.cli app/create-project.sh install.sh uninstall.sh
+python3 -m py_compile src/code_hatchery/gui_gtk.py scripts/code-hatchery-gui-gtk.py
+bash -n scripts/code-hatchery scripts/code-hatchery.cli scripts/create-project.sh install.sh uninstall.sh
 ```

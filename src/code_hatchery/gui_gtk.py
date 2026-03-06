@@ -26,8 +26,8 @@ TEMPLATES = [
     "lua",
 ]
 DEFAULT_BASE = os.path.expanduser("~/Chronos/projects")
-SCRIPT_DIR = Path(__file__).resolve().parent
-CREATE_SCRIPT = SCRIPT_DIR / "create-project.sh"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+CREATE_SCRIPT = PROJECT_ROOT / "scripts" / "create-project.sh"
 GUI_LOGFILE = Path("/tmp/code-hatchery-gui.log")
 APP_NAME = "Code Hatchery"
 APP_VERSION = "1.0.0"

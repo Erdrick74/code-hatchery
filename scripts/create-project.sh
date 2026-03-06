@@ -19,7 +19,7 @@ if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
   exit 1
 fi
 
-BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="$1"
 DEST="$2"
 OSS_META=0
@@ -33,8 +33,6 @@ fi
 
 if [ -d "$BASE/templates/$TEMPLATE" ]; then
   TEMPLATE_DIR="$BASE/templates/$TEMPLATE"
-elif [ -d "$BASE/$TEMPLATE" ]; then
-  TEMPLATE_DIR="$BASE/$TEMPLATE"
 else
   echo "Unknown template: $TEMPLATE"
   exit 1

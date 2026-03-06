@@ -2,6 +2,13 @@
 
 Code Hatchery is a Linux project scaffolder with a focused GUI, starter templates for popular languages, and automatic terminal fallback when GUI mode is unavailable.
 
+Repository layout is now conventional as well:
+
+- `src/code_hatchery/` for Python runtime code
+- `scripts/` for launch and creation scripts
+- `templates/` for bundled project templates
+- `assets/` for icons and static assets
+
 ## Open-source metadata
 
 This repository now includes:

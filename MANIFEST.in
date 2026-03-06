@@ -2,5 +2,7 @@ include README.md
 include LICENSE
 include install.sh
 include uninstall.sh
-recursive-include app *
-prune app/__pycache__
+recursive-include scripts *
+recursive-include assets *
+recursive-include templates *
+global-exclude __pycache__ *.py[cod]

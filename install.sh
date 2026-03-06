@@ -8,29 +8,36 @@ APP_SHARE="$PREFIX/share/code-hatchery"
 BIN_DIR="$PREFIX/bin"
 APPS_DIR="$PREFIX/share/applications"
 ICON_BASE="$PREFIX/share/icons/hicolor"
+APP_SCRIPTS="$APP_SHARE/scripts"
+APP_SRC="$APP_SHARE/src"
+APP_TEMPLATES="$APP_SHARE/templates"
+APP_ASSETS="$APP_SHARE/assets"
 
-mkdir -p "$APP_SHARE" "$BIN_DIR" "$APPS_DIR"
+mkdir -p "$APP_SHARE" "$APP_SCRIPTS" "$APP_SRC" "$APP_TEMPLATES" "$APP_ASSETS" "$BIN_DIR" "$APPS_DIR"
 
-install -m 0755 "$REPO_DIR/app/code-hatchery" "$APP_SHARE/code-hatchery"
-install -m 0755 "$REPO_DIR/app/code-hatchery-gui-gtk.py" "$APP_SHARE/code-hatchery-gui-gtk.py"
-install -m 0755 "$REPO_DIR/app/code-hatchery.cli" "$APP_SHARE/code-hatchery.cli"
-install -m 0755 "$REPO_DIR/app/create-project.sh" "$APP_SHARE/create-project.sh"
+install -m 0755 "$REPO_DIR/scripts/code-hatchery" "$APP_SCRIPTS/code-hatchery"
+install -m 0755 "$REPO_DIR/scripts/code-hatchery-gui-gtk.py" "$APP_SCRIPTS/code-hatchery-gui-gtk.py"
+install -m 0755 "$REPO_DIR/scripts/code-hatchery.cli" "$APP_SCRIPTS/code-hatchery.cli"
+install -m 0755 "$REPO_DIR/scripts/create-project.sh" "$APP_SCRIPTS/create-project.sh"
+rm -rf "$APP_SRC/code_hatchery"
+cp -a "$REPO_DIR/src/code_hatchery" "$APP_SRC/code_hatchery"
+rm -rf "$APP_SRC/code_hatchery/__pycache__"
 
 for t in python python-github-ready node-ts go rust java cpp csharp php lua; do
-  rm -rf "$APP_SHARE/$t"
-  cp -a "$REPO_DIR/app/templates/$t" "$APP_SHARE/$t"
+  rm -rf "$APP_TEMPLATES/$t"
+  cp -a "$REPO_DIR/templates/$t" "$APP_TEMPLATES/$t"
 done
 
 cat > "$BIN_DIR/code-hatchery" <<LAUNCH
 #!/usr/bin/env bash
 set -euo pipefail
-exec "$APP_SHARE/code-hatchery" "\$@"
+exec "$APP_SCRIPTS/code-hatchery" "\$@"
 LAUNCH
 
 chmod +x "$BIN_DIR/code-hatchery"
 
 # Install icon at common sizes.
-ICON_SRC="$REPO_DIR/app/icons/code-hatchery.png"
+ICON_SRC="$REPO_DIR/assets/icons/code-hatchery.png"
 mkdir -p "$ICON_BASE/1024x1024/apps"
 cp -f "$ICON_SRC" "$ICON_BASE/1024x1024/apps/code-hatchery.png"
 
