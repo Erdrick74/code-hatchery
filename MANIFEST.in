@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include install.sh
+include uninstall.sh
+recursive-include app *
+prune app/__pycache__

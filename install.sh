@@ -16,7 +16,7 @@ install -m 0755 "$REPO_DIR/app/code-hatchery-gui-gtk.py" "$APP_SHARE/code-hatche
 install -m 0755 "$REPO_DIR/app/code-hatchery.cli" "$APP_SHARE/code-hatchery.cli"
 install -m 0755 "$REPO_DIR/app/create-project.sh" "$APP_SHARE/create-project.sh"
 
-for t in python node-ts go rust java cpp csharp php lua; do
+for t in python python-github-ready node-ts go rust java cpp csharp php lua; do
   rm -rf "$APP_SHARE/$t"
   cp -a "$REPO_DIR/app/templates/$t" "$APP_SHARE/$t"
 done

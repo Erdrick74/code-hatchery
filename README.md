@@ -2,6 +2,23 @@
 
 Code Hatchery is a Linux project scaffolder with a focused GUI, starter templates for popular languages, and automatic terminal fallback when GUI mode is unavailable.
 
+## Open-source metadata
+
+This repository now includes:
+
+- `LICENSE` (MIT)
+- `CONTRIBUTING.md`
+- `CODE_OF_CONDUCT.md`
+- `SECURITY.md`
+
+## Development setup
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .[dev]
+```
+
 ## Runtime behavior
 
 - Primary mode: GTK GUI
@@ -69,4 +86,43 @@ PREFIX=/your/prefix ./install.sh
 code-hatchery
 ```
 
-Default project creation path is the current user's home directory (`$HOME`), and can be changed in the UI/CLI.
+Default project creation path is `~/Chronos/projects`, and can be changed in the UI/CLI.
+
+## Repository checks
+
+```bash
+ruff check .
+pytest
+```
+
+## Open-source metadata bootstrap
+
+Project creation now supports an optional metadata bootstrap that adds:
+
+- `LICENSE` (MIT)
+- `CONTRIBUTING.md`
+- `CODE_OF_CONDUCT.md`
+- `SECURITY.md`
+- `.gitignore` (if missing)
+
+GUI:
+
+- Toggle `Include open-source metadata files` during project creation.
+
+CLI:
+
+- Prompted during creation (`Include open-source metadata files? [Y/n]`)
+- Optional flags: `--oss-meta` or `--no-oss-meta`
+
+## Available templates
+
+- `python`
+- `python-github-ready`
+- `node-ts`
+- `go`
+- `rust`
+- `java`
+- `cpp`
+- `csharp`
+- `php`
+- `lua`

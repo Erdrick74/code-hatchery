@@ -13,8 +13,19 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("GtkLayerShell", "0.1")
 from gi.repository import Gdk, GLib, Gtk, GtkLayerShell
 
-TEMPLATES = ["python", "node-ts", "go", "rust", "java", "cpp", "csharp", "php", "lua"]
-DEFAULT_BASE = os.path.expanduser("~")
+TEMPLATES = [
+    "python",
+    "python-github-ready",
+    "node-ts",
+    "go",
+    "rust",
+    "java",
+    "cpp",
+    "csharp",
+    "php",
+    "lua",
+]
+DEFAULT_BASE = os.path.expanduser("~/Chronos/projects")
 SCRIPT_DIR = Path(__file__).resolve().parent
 CREATE_SCRIPT = SCRIPT_DIR / "create-project.sh"
 GUI_LOGFILE = Path("/tmp/code-hatchery-gui.log")
@@ -24,8 +35,9 @@ APP_AUTHOR = "Erdrick74"
 
 
 class DevCreateGtkApp:
-    def __init__(self, open_after: bool):
+    def __init__(self, open_after: bool, include_meta: bool):
         self.open_after = open_after
+        self.include_meta = include_meta
         self.worker = None
         self._browse_dialog = None
 
@@ -231,6 +243,10 @@ class DevCreateGtkApp:
         self.open_check.set_active(True)
         grid.attach(self.open_check, 1, 3, 1, 1)
 
+        self.meta_check = Gtk.CheckButton(label="Include open-source metadata files")
+        self.meta_check.set_active(self.include_meta)
+        grid.attach(self.meta_check, 1, 4, 1, 1)
+
         self.status_label = Gtk.Label(label="Ready")
         self.status_label.set_xalign(0.0)
         card_box.pack_start(self.status_label, False, False, 0)
@@ -324,6 +340,7 @@ class DevCreateGtkApp:
         self.base_entry.set_sensitive(enabled)
         self.browse_btn.set_sensitive(enabled)
         self.open_check.set_sensitive(enabled)
+        self.meta_check.set_sensitive(enabled)
         self.create_btn.set_sensitive(enabled)
 
     def _on_template_changed(self, combo: Gtk.ComboBoxText) -> None:
@@ -350,7 +367,7 @@ class DevCreateGtkApp:
         if command_exists("notify-send"):
             subprocess.Popen(["notify-send", title, body], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    def _confirm_create(self, template: str, project_path: str) -> bool:
+    def _confirm_create(self, template: str, project_path: str, include_meta: bool) -> bool:
         self._log(f"confirm shown template={template} path={project_path}")
         result = {"confirmed": False}
         loop = GLib.MainLoop()
@@ -402,7 +419,10 @@ class DevCreateGtkApp:
         title.set_xalign(0.0)
         card_box.pack_start(title, False, False, 0)
 
-        detail = Gtk.Label(label=f"Template: {template}\nPath: {project_path}")
+        meta_text = "Yes" if include_meta else "No"
+        detail = Gtk.Label(
+            label=f"Template: {template}\nPath: {project_path}\nInclude metadata: {meta_text}"
+        )
         detail.set_xalign(0.0)
         card_box.pack_start(detail, False, False, 0)
 
@@ -493,7 +513,8 @@ class DevCreateGtkApp:
             self._set_error(f"Path already exists: {project_path}", focus="project")
             return
 
-        if not self._confirm_create(template, project_path):
+        include_meta = self.meta_check.get_active()
+        if not self._confirm_create(template, project_path, include_meta):
             self._set_status("Cancelled.")
             self._log("creation cancelled")
             return
@@ -505,7 +526,10 @@ class DevCreateGtkApp:
         def worker() -> None:
             try:
                 os.makedirs(base_dir, exist_ok=True)
-                rc = self._run_command([str(CREATE_SCRIPT), template, project_path])
+                create_cmd = [str(CREATE_SCRIPT), template, project_path]
+                if include_meta:
+                    create_cmd.append("--oss-meta")
+                rc = self._run_command(create_cmd)
                 if rc != 0:
                     self._log(f"create-project failed rc={rc}")
                     GLib.idle_add(self._finish, False, "Create step failed.")
@@ -571,7 +595,8 @@ def command_exists(name: str) -> bool:
 
 def main() -> int:
     open_after = "--no-open" not in os.sys.argv[1:]
-    app = DevCreateGtkApp(open_after=open_after)
+    include_meta = "--no-oss-meta" not in os.sys.argv[1:]
+    app = DevCreateGtkApp(open_after=open_after, include_meta=include_meta)
     Gtk.main()
     del app
     return 0
