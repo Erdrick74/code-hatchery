@@ -37,7 +37,6 @@ pip install -e .[dev]
 - `python3`
 - `python-gobject` / `PyGObject` (`gi`) for GUI mode
 - `gtk3` for GUI mode
-- `gtk-layer-shell` for GUI overlay behavior
 
 Optional:
 
@@ -49,20 +48,20 @@ Optional:
 ### Arch Linux
 
 ```bash
-sudo pacman -S --needed bash python python-gobject gtk3 gtk-layer-shell
+sudo pacman -S --needed bash python python-gobject gtk3
 ```
 
 ### Debian / Ubuntu
 
 ```bash
 sudo apt update
-sudo apt install -y bash python3 python3-gi gir1.2-gtk-3.0 libgtk-layer-shell0
+sudo apt install -y bash python3 python3-gi gir1.2-gtk-3.0
 ```
 
 ### Fedora
 
 ```bash
-sudo dnf install -y bash python3 python3-gobject gtk3 gtk-layer-shell
+sudo dnf install -y bash python3 python3-gobject gtk3
 ```
 
 ## Install

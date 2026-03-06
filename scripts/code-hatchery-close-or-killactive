@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+active_class="$(hyprctl activewindow 2>/dev/null | sed -n 's/^class: //p' | head -n 1)"
+
+if [ "$active_class" = "Code Hatchery" ]; then
+  hyprctl dispatch closewindow
+  exit 0
+fi
+
+hyprctl dispatch killactive

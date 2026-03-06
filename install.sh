@@ -15,7 +15,19 @@ APP_ASSETS="$APP_SHARE/assets"
 
 mkdir -p "$APP_SHARE" "$APP_SCRIPTS" "$APP_SRC" "$APP_TEMPLATES" "$APP_ASSETS" "$BIN_DIR" "$APPS_DIR"
 
+# Remove legacy flat-layout payload from older installs before copying the new structure.
+rm -rf \
+  "$APP_SHARE/code-hatchery" \
+  "$APP_SHARE/code-hatchery-gui-gtk.py" \
+  "$APP_SHARE/code-hatchery.cli" \
+  "$APP_SHARE/create-project.sh" \
+  "$APP_SHARE/code-hatchery-close-or-killactive"
+for legacy in python python-github-ready node-ts go rust java cpp csharp php lua; do
+  rm -rf "$APP_SHARE/$legacy"
+done
+
 install -m 0755 "$REPO_DIR/scripts/code-hatchery" "$APP_SCRIPTS/code-hatchery"
+install -m 0755 "$REPO_DIR/scripts/code-hatchery-close-or-killactive" "$APP_SCRIPTS/code-hatchery-close-or-killactive"
 install -m 0755 "$REPO_DIR/scripts/code-hatchery-gui-gtk.py" "$APP_SCRIPTS/code-hatchery-gui-gtk.py"
 install -m 0755 "$REPO_DIR/scripts/code-hatchery.cli" "$APP_SCRIPTS/code-hatchery.cli"
 install -m 0755 "$REPO_DIR/scripts/create-project.sh" "$APP_SCRIPTS/create-project.sh"
@@ -35,6 +47,14 @@ exec "$APP_SCRIPTS/code-hatchery" "\$@"
 LAUNCH
 
 chmod +x "$BIN_DIR/code-hatchery"
+
+cat > "$BIN_DIR/code-hatchery-close-or-killactive" <<LAUNCH
+#!/usr/bin/env bash
+set -euo pipefail
+exec "$APP_SCRIPTS/code-hatchery-close-or-killactive" "\$@"
+LAUNCH
+
+chmod +x "$BIN_DIR/code-hatchery-close-or-killactive"
 
 # Install icon at common sizes.
 ICON_SRC="$REPO_DIR/assets/icons/code-hatchery.png"

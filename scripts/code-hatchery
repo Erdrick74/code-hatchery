@@ -13,12 +13,7 @@ LOGFILE="/tmp/code-hatchery-launch.log"
   echo "XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-}"
 } >>"$LOGFILE" 2>&1
 
-if pgrep -f "$GUI_GTK" >/dev/null 2>&1; then
-  pkill -f "$GUI_GTK" >/dev/null 2>&1 || true
-  exit 0
-fi
-
-if python3 -c "import gi; gi.require_version('Gtk','3.0'); gi.require_version('GtkLayerShell','0.1'); from gi.repository import Gtk, GtkLayerShell" >/dev/null 2>&1; then
+if python3 -c "import gi; gi.require_version('Gtk','3.0'); from gi.repository import Gtk" >/dev/null 2>&1; then
   set +e
   "$GUI_GTK" "$@" >>"$LOGFILE" 2>&1
   rc=$?
@@ -28,7 +23,7 @@ if python3 -c "import gi; gi.require_version('Gtk','3.0'); gi.require_version('G
 fi
 
 if command -v notify-send >/dev/null 2>&1; then
-  notify-send "Code Hatchery" "GTK layer-shell unavailable. Falling back to terminal mode." || true
+  notify-send "Code Hatchery" "GTK GUI unavailable. Falling back to terminal mode." || true
 fi
 
 for term in kitty footclient alacritty wezterm xterm; do

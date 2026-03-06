@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess
@@ -10,8 +12,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
-gi.require_version("GtkLayerShell", "0.1")
-from gi.repository import Gdk, GLib, Gtk, GtkLayerShell
+from gi.repository import Gdk, GLib, Gtk
 
 TEMPLATES = [
     "python",
@@ -42,21 +43,11 @@ class DevCreateGtkApp:
         self._browse_dialog = None
 
         self.window = Gtk.Window(title=f"{APP_NAME} v{APP_VERSION}")
-        self.window.set_name("devcreate-overlay")
-        self.window.set_decorated(False)
-        self.window.set_keep_above(True)
+        self.window.set_name("devcreate-window")
+        self.window.set_default_size(720, 420)
+        self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.connect("delete-event", self._on_close)
         self.window.connect("key-press-event", self._on_key_press)
-        self.window.connect("focus-out-event", self._on_focus_out)
-        self.window.connect("map-event", self._on_map)
-
-        GtkLayerShell.init_for_window(self.window)
-        GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.OVERLAY)
-        GtkLayerShell.set_keyboard_mode(self.window, GtkLayerShell.KeyboardMode.ON_DEMAND)
-        GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.TOP, True)
-        GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.BOTTOM, True)
-        GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.LEFT, True)
-        GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.RIGHT, True)
 
         self._apply_css()
         self._build_ui()
@@ -88,18 +79,18 @@ class DevCreateGtkApp:
 
     def _apply_css(self) -> None:
         css = b"""
-        #devcreate-overlay {
-          background-color: rgba(16, 18, 20, 0.28);
+        #devcreate-window {
+          background-color: @theme_base_color;
         }
 
         #devcreate-card {
           background-color: @theme_base_color;
-          border-radius: 12px;
-          border: 2px solid #00ffff;
+          border-radius: 10px;
+          border: none;
         }
 
         #devcreate-card > box {
-          padding: 12px;
+          padding: 16px;
         }
 
         #devcreate-header-title {
@@ -143,30 +134,14 @@ class DevCreateGtkApp:
         Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
     def _build_ui(self) -> None:
-        # EventBox gives us an input surface for the entire overlay so clicks
-        # outside the card are consumed instead of reaching other windows.
-        self.capture = Gtk.EventBox()
-        self.capture.set_visible_window(False)
-        # Let child widgets handle input normally; background clicks are still captured.
-        self.capture.set_above_child(False)
-        self.window.add(self.capture)
-
-        overlay = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.capture.add(overlay)
-
-        top_spacer = Gtk.Box()
-        top_spacer.set_vexpand(True)
-        overlay.pack_start(top_spacer, True, True, 0)
-
-        center_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        center_row.set_halign(Gtk.Align.CENTER)
-        overlay.pack_start(center_row, False, False, 0)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        outer.set_border_width(16)
+        self.window.add(outer)
 
         card = Gtk.Frame()
         card.set_name("devcreate-card")
         card.set_shadow_type(Gtk.ShadowType.NONE)
-        card.set_size_request(640, -1)
-        center_row.pack_start(card, False, False, 0)
+        outer.pack_start(card, True, True, 0)
 
         card_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         card.add(card_box)
@@ -259,35 +234,8 @@ class DevCreateGtkApp:
         self.create_btn.connect("clicked", lambda _b: self._start())
         btn_row.pack_end(self.create_btn, False, False, 0)
 
-        bottom_spacer = Gtk.Box()
-        bottom_spacer.set_vexpand(True)
-        overlay.pack_start(bottom_spacer, True, True, 0)
-
-    def _enforce_focus(self) -> bool:
-        self.window.present()
-        # Keep the layer-shell surface focused, but do not force focus back to
-        # the project entry on every cycle (that can cause text replacement while typing).
-        self.window.grab_focus()
-        return False
-
-    def _on_map(self, *_args) -> bool:
-        GLib.idle_add(self._enforce_focus)
-        return False
-
-    def _on_focus_out(self, *_args) -> bool:
-        # Do not force-focus on focus-out: combobox popups use separate surfaces
-        # and this can cancel selection changes before they commit.
-        return False
-
-    def _on_background_input(self, *_args) -> bool:
-        # Do not swallow pointer events; swallowing can interfere with combobox popup selection.
-        return False
 
     def _on_key_press(self, _widget: Gtk.Widget, event: Gdk.EventKey) -> bool:
-        if event.keyval == Gdk.KEY_Escape:
-            self._log("key:escape -> close")
-            Gtk.main_quit()
-            return True
         if event.keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
             self._log("key:enter -> start")
             self._start()
@@ -362,111 +310,36 @@ class DevCreateGtkApp:
 
     def _show_message(self, message_type: Gtk.MessageType, title: str, body: str) -> None:
         self._log(f"message {title}: {body}")
-        # Avoid modal dialogs in layer-shell mode: they can trap input and look frozen.
+        dialog = Gtk.MessageDialog(
+            transient_for=self.window,
+            modal=True,
+            message_type=message_type,
+            buttons=Gtk.ButtonsType.OK,
+            text=title,
+        )
+        dialog.format_secondary_text(body)
+        dialog.run()
+        dialog.destroy()
         self._set_status(f"{title}: {body}")
-        if command_exists("notify-send"):
-            subprocess.Popen(["notify-send", title, body], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def _confirm_create(self, template: str, project_path: str, include_meta: bool) -> bool:
         self._log(f"confirm shown template={template} path={project_path}")
-        result = {"confirmed": False}
-        loop = GLib.MainLoop()
-
-        self.window.set_sensitive(False)
-
-        confirm = Gtk.Window(title="Code Hatchery")
-        confirm.set_name("devcreate-overlay")
-        confirm.set_decorated(False)
-        confirm.set_keep_above(True)
-
-        GtkLayerShell.init_for_window(confirm)
-        GtkLayerShell.set_layer(confirm, GtkLayerShell.Layer.OVERLAY)
-        GtkLayerShell.set_keyboard_mode(confirm, GtkLayerShell.KeyboardMode.ON_DEMAND)
-        GtkLayerShell.set_anchor(confirm, GtkLayerShell.Edge.TOP, True)
-        GtkLayerShell.set_anchor(confirm, GtkLayerShell.Edge.BOTTOM, True)
-        GtkLayerShell.set_anchor(confirm, GtkLayerShell.Edge.LEFT, True)
-        GtkLayerShell.set_anchor(confirm, GtkLayerShell.Edge.RIGHT, True)
-
-        capture = Gtk.EventBox()
-        capture.set_visible_window(False)
-        capture.set_above_child(False)
-        capture.add_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK)
-        capture.connect("button-press-event", lambda *_: True)
-        capture.connect("button-release-event", lambda *_: True)
-        confirm.add(capture)
-
-        overlay = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        capture.add(overlay)
-
-        top_spacer = Gtk.Box()
-        top_spacer.set_vexpand(True)
-        overlay.pack_start(top_spacer, True, True, 0)
-
-        center_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        center_row.set_halign(Gtk.Align.CENTER)
-        overlay.pack_start(center_row, False, False, 0)
-
-        card = Gtk.Frame()
-        card.set_name("devcreate-card")
-        card.set_shadow_type(Gtk.ShadowType.NONE)
-        card.set_size_request(560, -1)
-        center_row.pack_start(card, False, False, 0)
-
-        card_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        card.add(card_box)
-
-        title = Gtk.Label(label="Create project?")
-        title.set_xalign(0.0)
-        card_box.pack_start(title, False, False, 0)
-
         meta_text = "Yes" if include_meta else "No"
-        detail = Gtk.Label(
-            label=f"Template: {template}\nPath: {project_path}\nInclude metadata: {meta_text}"
+        dialog = Gtk.MessageDialog(
+            transient_for=self.window,
+            modal=True,
+            message_type=Gtk.MessageType.QUESTION,
+            buttons=Gtk.ButtonsType.NONE,
+            text="Create project?",
         )
-        detail.set_xalign(0.0)
-        card_box.pack_start(detail, False, False, 0)
-
-        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        card_box.pack_start(btn_row, False, False, 0)
-
-        no_btn = Gtk.Button(label="No")
-        yes_btn = Gtk.Button(label="Yes")
-        yes_btn.set_name("dev-confirm-yes")
-
-        def finish(confirmed: bool) -> None:
-            result["confirmed"] = confirmed
-            if loop.is_running():
-                loop.quit()
-            confirm.destroy()
-
-        no_btn.connect("clicked", lambda *_: finish(False))
-        yes_btn.connect("clicked", lambda *_: finish(True))
-        btn_row.pack_end(yes_btn, False, False, 0)
-        btn_row.pack_end(no_btn, False, False, 0)
-
-        def on_key_press(_w: Gtk.Widget, event: Gdk.EventKey) -> bool:
-            if event.keyval == Gdk.KEY_Escape:
-                finish(False)
-                return True
-            if event.keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
-                finish(True)
-                return True
-            return False
-
-        confirm.connect("key-press-event", on_key_press)
-        confirm.connect("delete-event", lambda *_: (finish(False), True)[1])
-
-        bottom_spacer = Gtk.Box()
-        bottom_spacer.set_vexpand(True)
-        overlay.pack_start(bottom_spacer, True, True, 0)
-
-        confirm.show_all()
-        yes_btn.grab_focus()
-        loop.run()
-        self.window.set_sensitive(True)
+        dialog.format_secondary_text(
+            f"Template: {template}\nPath: {project_path}\nInclude metadata: {meta_text}"
+        )
+        dialog.add_buttons("No", Gtk.ResponseType.NO, "Yes", Gtk.ResponseType.YES)
+        dialog.set_default_response(Gtk.ResponseType.NO)
+        confirmed = dialog.run() == Gtk.ResponseType.YES
+        dialog.destroy()
         self._focus_project_initial()
-
-        confirmed = result["confirmed"]
         self._log(f"confirm response confirmed={confirmed}")
         return confirmed
 
@@ -582,8 +455,9 @@ class DevCreateGtkApp:
         self._set_status(status)
         self._set_busy(False)
         if ok:
-            self._log("success -> closing gui")
-            Gtk.main_quit()
+            self._log("success -> keeping window open")
+            self.project_entry.set_text("")
+            self.project_entry.grab_focus()
         else:
             self._show_message(Gtk.MessageType.ERROR, "Code Hatchery", status)
         return False
